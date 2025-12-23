@@ -42,26 +42,29 @@ prompt = ChatPromptTemplate.from_messages(
         ("human", "{input}"),
     ]
 )
-from langchain.llms import HuggingFacePipeline
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from langchain_groq import ChatGroq
+from langchain_core.messages import SystemMessage, HumanMessage
 
-model_name = "NousResearch/Llama-2-7b-hf"
+# 👇 Make sure you have your GROQ_API_KEY set as an environment variable
+# e.g., export GROQ_API_KEY="your_api_key_here" (Linux/Mac) 
+# or set it in your environment for Windows
 
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
-
-pipe = pipeline(
-    "text-generation",
-    model=model,
-    tokenizer=tokenizer,
-    max_new_tokens=256,
-    do_sample=False   # ✅ equivalent to temperature=0
+chatModel = ChatGroq(
+    model="llama-3.1-8b-instant",  # updated supported model
+    temperature=0.0
 )
 
-chatModel = HuggingFacePipeline(pipeline=pipe)
+# Build messages
+messages = [
+    SystemMessage(content="You are a helpful assistant."),
+    HumanMessage(content="Explain Acromegaly and Gigantism in simple terms.")
+]
 
-response = chatModel("Explain Acromegaly and Gigantism in simple terms.")
-print(response)
+# Invoke the model
+response = chatModel.invoke(messages)
+
+# Print the answer
+print(response.content)
 
 
 question_answer_chain = create_stuff_documents_chain(chatModel, prompt)
